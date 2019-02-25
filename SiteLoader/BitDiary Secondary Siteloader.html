@@ -1,0 +1,65 @@
+<script>
+document.write("<p>Secondary Siteloader Loading...</p>")
+
+var _scripts = {
+    JSEncrypt : "c1ac4721b5029b5d879e76720182c346838c1a6a139f99bd01538e7c7e780501",
+    CryptoJS : "1b1ba5c0dece7a642c9a16a6c7bc73e62ebf595e2fa956bf09cdf4aff0660d01",
+    Main:"4e0d62aa6e4adeec469e70e5457cef5fe94434aeb8f5672792b1c7e4b7894c0b",
+    Bootstrap:"98b56fc917337fa812dbca9049337bf9275f4b5c2bb83ce13b3a68fd6b351130",
+    JQuery:"d8356c0d0e51e340d8929dc14aa8904c77d48229c2ee142e11b824140155b7f7",
+    IBE:"f9e1125d9fce04c9eebe01f3fbeee23a79d08f0fe46c34ccea429189e27e7707",
+    MoneyButton:"83e6b7bfbb2ac2125993fc3c199164e322369bb5ad384814428f8d523873475d",
+    BSV:[
+        "8b3d11e105a555c28df9a54635bb5c4fc0580fd35d773f88a7096c44c9d9ab8e",
+        "b32687e8efaebd61f49762481d7b7e9e3d9edb7a152ca23a1ced9dfe0d6520a0",
+        "4d3c6f85a6ed219b5dd6311fda71c6e99c975557f11b342e6c4c6cacc14eddec",
+        "070a71d56df31a97bc4211c6f5c28eb09ee9b2c83be4863d4611008ae97480b2",
+        "a8ca4384f11ad60ff954a1818d8043aca99deaa3a04a378eef8a080945f11d70",
+        "b96f965651ab4e3c7f930b6c251025630ef954a4a839342c82af6ed4d1d7bfa5",
+        "46864d3868f2a0881987b32730c0923cd6a55607631b1155eb778e98a6a200c2",
+        "e95fdbb1f60efb9d48b1b3b98d3bb403bbc4c0c37349706fa2fe59c6b7b6439d",
+        "416d01c6e245270a1604aff155bf69dd10b2684244a1c4b870df8cfdafcdcb4f"
+    ]
+}
+function loadScript(library){
+    var scriptTX = _scripts[library]
+    var script = null
+    try{
+        if(!scriptTX){
+            throw new Error(library+" is missing")
+            return
+        }
+        document.write("<p>Loading " + library+"</p>")
+        if(scriptTX instanceof Array){
+            var scriptChunks=scriptTX.map(tx=>{
+                document.write("<p>Loading TX " + tx+"</p>")
+                xhr = new XMLHttpRequest()
+                xhr.open("GET", "./" + tx, false)
+                xhr.send(null)
+                if(xhr.status==200)return xhr.responseText
+                else throw new Error(library+" is missing")
+            })
+            script=scriptChunks.join("")
+        }else{
+            document.write("<p>Loading TX " + scriptTX+"</p>")
+            xhr = new XMLHttpRequest()
+            xhr.open("GET", "./" + _scripts[library], false)
+            xhr.send(null)
+            if(xhr.status==200)script=xhr.responseText
+            else throw new Error(library+" is missing")
+        }
+        window.eval(script)
+    }catch (err){
+        console.log(err)
+    }
+}
+loadScript("JQuery")
+loadScript("Bootstrap")
+loadScript("BSV")
+loadScript("IBE")
+loadScript("MoneyButton")
+loadScript("Main")
+document.write("\r\nNow Loading Page...")
+document.close()
+setTimeout('renderPage("a3dbff56e4ae4914dd5cb67bd74ce7420415d5810a82f3a7e00cbdaf3d8277f7")',1000)
+</script>

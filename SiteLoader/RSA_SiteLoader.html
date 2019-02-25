@@ -1,0 +1,80 @@
+<html>
+<head>
+<!-- JSEncrypt -->
+<script src='./c1ac4721b5029b5d879e76720182c346838c1a6a139f99bd01538e7c7e780501'></script>
+<!-- CryptoJS -->
+<script src='./1b1ba5c0dece7a642c9a16a6c7bc73e62ebf595e2fa956bf09cdf4aff0660d01'></script>
+</head>
+<body>
+    Loading, Please Wait....
+  <script>
+  var endpoint = "https://genesis.bitdb.network/q/1FnauZ9aUH2Bex6JzdcV4eNX7oLSSEbxtN/"
+  var siteId = '[Your Site Name]'
+  var page = '/'
+  var pageName = siteId + page
+  // Use RSA Key
+  /*
+  var sitePubkey =  '-----BEGIN PUBLIC KEY-----\n'+
+                    'MIIBITANBgkqhkiG9w0BAQEFAAOCAQ4AMIIBCQKCAQBwqamPZSSWfU2mVNsY4Ptv\n'+
+                    'vVAv6PUN5U1J7TVzz9urpM98ABkF04VdBkr5GpgVL7DjUYp4BUdB8ymTGoc9GDHG\n'+
+                    'dplBbmdtRiRZinnVJNs5+d6cXhdH5of68TpxtHjxMlA5/gj3yJY0eI/WNd8MP+m/\n'+
+                    '6gfyC4b0UcnlvQCC7VMK3z21BCIVgsRsoruIYdrd1O74mOsL9LoxX+/uprAqv2/O\n'+
+                    'fT1rH0eHM9SKftcmyZxJT0l0PaOxGQrg5H/LA7OouQUoa8L3XacFSK7F2OffxAFr\n'+
+                    'VH+9EWNJl52FAO5Gw1J+tXHpyuNusRXu1V8IoNyFBt4j2bkwrBPFzVxr39aJk0PB\n'+
+                    'AgMBAAE=\n'+
+                    '-----END PUBLIC KEY-----'
+  */
+  var sitePubkey = '[Your RSA PUBLIC Key]'
+  var rsa = new JSEncrypt()
+  rsa.setPublicKey(sitePubkey)
+  var crypticPrefix = CryptoJS.SHA256(sitePubkey + pageName).toString()
+  console.log(crypticPrefix)
+  var verifySig = function(url,sig){
+    try{
+      return rsa.verify(url, sig, CryptoJS.SHA256);
+    }catch(err){
+    }
+    return false
+  }
+  
+  var renderPage = function(txid){
+    document.open()
+    //document.getElementById("page").src="https://bico.media/"+txid
+    fetch("./"+txid).then(res=>res.text()).then(html=>document.write(html))
+  }
+  
+  var loadPage = function () {
+      var query = {
+        "v": 3,
+        "q": {
+          "find": { "out.s1": crypticPrefix}
+        },
+        "r": {
+          "f": "[ .[] | {txid: .out[0].s2, sig: .out[0].s3, blk:.blk.i} ]"
+        }
+      }
+      
+      var b64 = btoa(JSON.stringify(query));
+      var url = endpoint + b64;
+
+      var header = {
+        headers: { key: ['Your BitDB API Key'] }
+      };
+
+      fetch(url, header).then(function(r) {
+        return r.json()
+      }).then(function(r) {
+        console.log(r)
+        var trustedURLs=r.c.sort((a,b)=>b.blk-a.blk).filter((entry)=>verifySig(pageName+entry.txid,entry.sig))
+        console.log(trustedURLs)
+        renderPage(trustedURLs[0].txid)
+      }).catch(err=>{
+        alert("Error:"+err)
+        endpoint = prompt("Try Other Endpoint?", endpoint)
+        if(endpoint)loadPage()
+      })
+  }
+  loadPage()
+  </script>
+</body>
+</html>
